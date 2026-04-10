@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AZ AI</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Cairo', sans-serif;
+}
+
+body {
+  background-color: #1a202c;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: white;
+}
+
+.chat-container {
+  width: 95%;
+  max-width: 500px;
+  height: 85vh;
+  background: #2d3748;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.chat-header {
+  padding: 20px;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  border-bottom: 1px solid #4a5568;
+  color: #4299e1;
+}
+
+#chat-box {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background: #1a202c;
+}
+
+.msg {
+  max-width: 80%;
+  padding: 12px 16px;
+  border-radius: 15px;
+  line-height: 1.5;
+}
+
+.msg-user {
+  align-self: flex-start;
+  background: #4299e1;
+  border-bottom-right-radius: 2px;
+}
+
+.msg-bot {
+  align-self: flex-end;
+  background: #4a5568;
+  border-bottom-left-radius: 2px;
+}
+
+.input-area {
+  padding: 15px;
+  background: #2d3748;
+  display: flex;
+  gap: 10px;
+}
+
+input {
+  flex: 1;
+  background: #1a202c;
+  border: 1px solid #4a5568;
+  padding: 12px;
+  border-radius: 10px;
+  color: white;
+  outline: none;
+}
+
+button {
+  background: #4299e1;
+  border: none;
+  padding: 0 25px;
+  border-radius: 10px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+}
+</style>
+</head>
+
+<body>
+
+<div class="chat-container">
+  <div class="chat-header">🔥 AZ AI</div>
+
+  <div id="chat-box">
+    <div class="msg msg-bot">أهلاً بك مع عز 👋</div>
+  </div>
+
+  <div class="input-area">
+    <input id="userInput" placeholder="اكتب هنا..." autocomplete="off">
+    <button id="sendBtn">إرسال</button>
+  </div>
+</div>
+
+<script>
+const box = document.getElementById("chat-box");
+const input = document.getElementById("userInput");
+const btn = document.getElementById("sendBtn");
+
+// 🔥 إضافة رسالة بشكل احترافي
+function addMessage(text, type) {
+  const div = document.createElement("div");
+  div.className = "msg " + (type === "user" ? "msg-user" : "msg-bot");
+  div.innerText = text;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+// 🔥 الإرسال
+async function sendMessage() {
+  const text = input.value.trim();
+  if (!text) return;
+
+  addMessage(text, "user");
+  input.value = "";
+  btn.disabled = true;
+
+  // 🔥 رسالة تحميل
+  const loading = document.createElement("div");
+  loading.className = "msg msg-bot";
+  loading.innerText = "🤖 جاري التفكير...";
+  box.appendChild(loading);
+
+  try {
+    const res = await fetch("/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ message: text })
+    });
+
+    if (!res.ok) throw new Error("Server error");
+
+    const data = await res.json();
+
+    loading.remove();
+    addMessage(data.reply, "bot");
+
+  } catch (err) {
+    loading.innerText = "❌ فشل الإرسال";
+    console.error(err);
+  }
+
+  btn.disabled = false;
+}
+
+// 🔥 أحداث
+btn.onclick = sendMessage;
+input.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") sendMessage();
+});
+</script>
+
+</body>
+</html>
