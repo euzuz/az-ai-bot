@@ -1,95 +1,127 @@
-<!DOCTYPE html>
-<html>
+[4:27 م، 2026/4/10] Al-Mutairi: import React, { useState, useRef, useEffect } from 'react';
+import './App.css';
+
+function App() {
+  // تعريف حالة الرسائل، ومربع النص، وحالة التحميل
+  const [messages, setMessages] = useState([
+    { text: "أهلاً بك مع عز، كيف يمكنني مساعدتك اليوم؟", sender: "bot" }
+  ]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  
+  // مرجع (Ref) عشان ننزل لآخر رسالة تلقائياً
+  const endOfMessagesRef = useRef(null);
+
+  // دالة النزول التلقائي
+  const scrollToBottom = () => {
+    endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // تشتغل كل مرة تتحدث فيها الرسائل
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // دالة الإرسال للسيرفر
+  const sendMessage = async () => {
+    if (!input.tri…
+[4:29 م، 2026/4/10] Al-Mutairi: <!DOCTYPE html>
+<html lang="ar" dir="rtl">
 <head>
-  <title>AZ AI BOT</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AZ AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+        body { background-color: #1a202c; display: flex; justify-content: center; align-items: center; height: 100vh; color: white; direction: rtl; }
+        
+        .chat-container { width: 95%; max-width: 500px; height: 85vh; background: #2d3748; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.6); border: 1px solid #4a5568; }
+        
+        .chat-header { padding: 20px; text-align: center; font-size: 1.8rem; font-weight: bold; border-bottom: 1px solid #4a5568; color: #63b3ed; background: #1a202c; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 10; letter-spacing: 1px; }
+        
+        #chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; background: #1a202c; scroll-behavior: smooth; }
+        
+        .msg { max-width: 80%; padding: 12px 18px; border-radius: 15px; line-height: 1.6; word-wrap: break-word; animation: fadeIn 0.4s ease-out; font-size: 1.05rem; }
+        .msg-user { align-self: flex-start; background: #3182ce; border-bottom-right-radius: 2px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .msg-bot { align-self: flex-end; background: #4a5568; border-bottom-left-radius: 2px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .msg-error { background: #fc8181; color: #742a2a; }
+        
+        .typing-indicator { font-size: 0.9rem; opacity: 0.7; font-style: italic; animation: pulse 1.5s infinite; background: transparent; box-shadow: none; align-self: flex-end; }
+        
+        .input-area { padding: 15px; background: #2d3748; display: flex; gap: 10px; border-top: 1px solid #4a5568; }
+        .input-area input { flex: 1; background: #1a202c; border: 1px solid #4a5568; padding: 15px; border-radius: 12px; color: white; outline: none; transition: border-color 0.3s; font-size: 1rem; }
+        .input-area input:focus { border-color: #63b3ed; }
+        .input-area button { background: #3182ce; border: none; padding: 0 25px; border-radius: 12px; color: white; font-weight: bold; font-size: 1rem; cursor: pointer; transition: all 0.3s ease; }
+        .input-area button:hover:not(:disabled) { background: #2b6cb0; transform: translateY(-2px); }
+        .input-area button:active:not(:disabled) { transform: translateY(0); }
+        .input-area button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1a202c; }
+        ::-webkit-scrollbar-thumb { background: #4a5568; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #718096; }
+    </style>
 </head>
 <body>
 
-<h2>Login</h2>
-<input id="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
-<button onclick="register()">Register</button>
-<button onclick="login()">Login</button>
+<div class="chat-container">
+    <div class="chat-header">🤖 AZ AI</div>
+    <div id="chat-box">
+        <div class="msg msg-bot">أهلاً بك مع عز، كيف يمكنني مساعدتك اليوم؟</div>
+    </div>
+    <div class="input-area">
+        <input type="text" id="userInput" placeholder="اكتب رسالتك هنا..." autocomplete="off">
+        <button id="sendBtn">إرسال</button>
+    </div>
+</div>
 
-<hr>
+<script>
+    const box = document.getElementById("chat-box");
+    const input = document.getElementById("userInput");
+    const btn = document.getElementById("sendBtn");
 
-<h2>Chat</h2>
-<input id="message" placeholder="اكتب رسالتك">
-<button onclick="sendMessage()">Send</button>
+    async function sendMessage() {
+        const text = input.value.trim();
+        if (!text) return;
 
-<ul id="chat"></ul>
+        // إضافة رسالة المستخدم
+        box.innerHTML += '<div class="msg msg-user">' + text + '</div>';
+        input.value = "";
+        btn.disabled = true;
+        
+        // إضافة مؤشر جاري الكتابة
+        const typingId = "typing-" + Date.now();
+        box.innerHTML += '<div id="' + typingId + '" class="msg msg-bot typing-indicator">عز يكتب الآن...</div>';
+        box.scrollTop = box.scrollHeight;
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        try {
+            const res = await fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: text })
+            });
+            const data = await res.json();
+            
+            // إزالة مؤشر الكتابة وإضافة الرد الفعلي
+            document.getElementById(typingId).remove();
+            box.innerHTML += '<div class="msg msg-bot">' + data.reply + '</div>';
+            
+        } catch (e) {
+            document.getElementById(typingId).remove();
+            box.innerHTML += '<div class="msg msg-error">❌ فشل الإرسال، تأكد من السيرفر</div>';
+        } finally {
+            btn.disabled = false;
+            box.scrollTop = box.scrollHeight;
+            input.focus();
+        }
+    }
 
-// 🔥 بياناتك
-const firebaseConfig = {
-  apiKey: "AIzaSyDAWFg9VcA0k11FtFB0DhpMC_MNCGf50No",
-  authDomain: "az-ai-bot.firebaseapp.com",
-  projectId: "az-ai-bot",
-  storageBucket: "az-ai-bot.firebasestorage.app",
-  messagingSenderId: "401046040353",
-  appId: "1:401046040353:web:ac0dfc4f44313600131860"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-let user = null;
-
-// تسجيل
-window.register = async () => {
-  const email = document.getElementById("email").value;
-  const pass = document.getElementById("password").value;
-
-  const res = await createUserWithEmailAndPassword(auth, email, pass);
-  user = res.user;
-  alert("تم التسجيل 🔥");
-};
-
-// تسجيل دخول
-window.login = async () => {
-  const email = document.getElementById("email").value;
-  const pass = document.getElementById("password").value;
-
-  const res = await signInWithEmailAndPassword(auth, email, pass);
-  user = res.user;
-  alert("تم تسجيل الدخول ✅");
-
-  loadMessages();
-};
-
-// إرسال رسالة
-window.sendMessage = async () => {
-  const msg = document.getElementById("message").value;
-
-  await addDoc(collection(db, "messages"), {
-    uid: user.uid,
-    text: msg,
-    time: Date.now()
-  });
-
-  document.getElementById("message").value = "";
-  loadMessages();
-};
-
-// تحميل المحادثات
-async function loadMessages() {
-  const q = query(collection(db, "messages"), where("uid", "==", user.uid));
-  const querySnapshot = await getDocs(q);
-
-  const chat = document.getElementById("chat");
-  chat.innerHTML = "";
-
-  querySnapshot.forEach((doc) => {
-    const li = document.createElement("li");
-    li.textContent = doc.data().text;
-    chat.appendChild(li);
-  });
-}
+    btn.onclick = sendMessage;
+    input.onkeypress = (e) => { if(e.key === "Enter") sendMessage(); };
 </script>
 
 </body>
